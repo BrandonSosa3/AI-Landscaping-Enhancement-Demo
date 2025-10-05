@@ -107,9 +107,10 @@ class MockDataService:
             }
         ]
 
-        # Historical job data for ML training
+        # Historical job data for ML training, 18 jobs we will train the model with 
         self.historical_job_data = [
             # Format: [lawn_sqft, tree_count, complexity_score, crew_size] -> actual_duration_minutes
+            # Example: ([1200, 2, 2, 2], 90) means 1200 sqft property with 2 trees took 90 minutes
             ([800, 1, 1, 2], 75),    # Small simple lawn
             ([1200, 2, 2, 2], 90),   # Medium lawn with trees  
             ([2000, 0, 1, 3], 120),  # Large simple lawn
@@ -139,6 +140,9 @@ class MockDataService:
     def get_historical_data(self):
         return self.historical_job_data
 
+# Feature engineering function, turning the raw data into ML ready numerical features
+# We are just giving each job a difficulty as the model cannot use strings so we assign a number to each service type
+# You may be wondering why we are not using 2 here, you will see in the next feature
 def get_job_features(job):
     """Extract features from job for ML model"""
     service_complexity = {
@@ -147,8 +151,12 @@ def get_job_features(job):
         'tree_trimming': 4
     }
     
+    # here we are getting the estimated sqft from the job, if not provided we use the estimated duration * 15
+    # This creates a fallback for jobs that don't have sqft provided, we assume 1 minute of work = 15 sqft
     estimated_sqft = job.get('estimated_sqft', job['estimated_duration'] * 15)
+    # here we are getting the the tree count from the job, if not provided we assume 2 trees for tree trimming and 1 for mowing
     estimated_trees = job.get('tree_count', 2 if 'tree' in job['service_type'] else 1)
+    # here we are getting the complexity of the job, if not provided we assume 2
     complexity = service_complexity.get(job['service_type'], 2)
-    
+    # We return the list of 4 values that we will use to train the model, they need to be in this specific order
     return [estimated_sqft, estimated_trees, complexity, job['crew_size_needed']]

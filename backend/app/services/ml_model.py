@@ -4,11 +4,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
 import logging
 
+# Using sklean random forest regressor to predict job duration, we are just initializing the model here 
 class JobDurationPredictor:
     def __init__(self):
+        # n_estimators=50 sets the number of trees in the forest to 50 more trees often better accuracy, but slower training/prediction
         self.model = RandomForestRegressor(n_estimators=50, random_state=42)
-        self.is_trained = False
-        
+        self.is_trained = False # We will set this to true when the model is trained
+
+    # Load training data from the mock data service, we will use this to train the model
     def prepare_training_data(self):
         """Prepare training data from historical jobs"""
         from .mock_data import MockDataService
@@ -16,15 +19,17 @@ class JobDurationPredictor:
         mock_service = MockDataService()
         historical_data = mock_service.get_historical_data()
         
+        # X are features, y are target values which are job durations
         X = []
         y = []
         
         for features, duration in historical_data:
             X.append(features)
             y.append(duration)
-            
+        # here we use numpy to convert the lists to numpy arrays for sklearn to use
         return np.array(X), np.array(y)
     
+    # We train the model here, I went for a 70/30 split for training and testing
     def train_model(self):
         """Train the duration prediction model"""
         try:
@@ -33,17 +38,22 @@ class JobDurationPredictor:
             # Split data
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
             
-            # Train model
+            # Train model, uses sklearn .fit()
             self.model.fit(X_train, y_train)
             
             # Evaluate
             predictions = self.model.predict(X_test)
+            # here we are running MAE on predictions vs actual values(y_test)
+            #mean_absolute_error returns the average absolute difference between predicted and true values; a lower MAE means better average accuracy in the same units as y.
             mae = mean_absolute_error(y_test, predictions)
             
             self.is_trained = True
             
+            # Here we are calculating the model accuracy using a rough formula 
+            # 1 - mae/mean(y_test) is fraction of how big the error is compared to the average target multiply by 100 to express as percent
             accuracy_percentage = max(0, (1 - mae/np.mean(y_test)) * 100)
             
+            # returns a dict with rounded MAE, accuracy percent, and number of training samples
             return {
                 'mean_absolute_error': round(mae, 1),
                 'accuracy': f"{accuracy_percentage:.1f}%",
