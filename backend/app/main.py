@@ -1,3 +1,4 @@
+# FastAPI lets you create backend web servers, programs that receive HTTP requests (like GET, POST, PUT, DELETE) and send back responses.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.services.mock_data import MockDataService
@@ -8,7 +9,7 @@ app = FastAPI(title="Landscaping AI Scheduler", version="1.0.0")
 # Enable CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React dev server
+    allow_origins=["http://localhost:3000"],  # React dev server, frontend runs on this
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -4,7 +4,7 @@ import CrewManager from './components/CrewManager';
 import AIOptimizer from './components/AIOptimizer';
 import { Job, Crew, OptimizationResult } from './types';
 import './App.css';
-
+{/* Main frontend file, connects to backend APIs, compiles all components, applies App.css global styles */}
 function App() {
   const [currentStep, setCurrentStep] = useState(1);
   const [jobs, setJobs] = useState<Job[]>([]);
